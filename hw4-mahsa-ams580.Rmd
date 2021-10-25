@@ -1,0 +1,104 @@
+---
+title: "HW4"
+author: "Mahsa Bargahi"
+date: "4/14/2021"
+output: word_document
+---
+
+```{r}
+library(tidyverse)
+library(caret)
+library(randomForest)
+```
+
+
+```{r}
+data <- read.csv('Titanic.csv')
+data <- subset(data, select = -c(PassengerId,Name,Ticket,Cabin))
+data <- subset(data, is.na(Age) == FALSE)
+data$Survived <- as.factor(data$Survived)
+str(data)
+```
+
+
+```{r}
+dim(data)[1] # 714 passengers are left
+
+```
+
+
+```{r}
+set.seed(123)
+split <- data$Survived %>%
+createDataPartition(p = 0.75, list = FALSE)
+train <- data[split,]
+test <- data[-split,]
+str(train) #536
+```
+
+```{r}
+str(test) #178 test
+```
+
+#qestion 2
+```{r}
+set.seed(123)
+model <- train(
+ Survived ~., data = train, method = "rf",
+ trControl = trainControl("cv", number = 10),
+ importance = TRUE
+ )
+# Best tuning parameter
+model$bestTune
+```
+
+```{r}
+model$finalModel
+```
+
+```{r}
+#sensitivity=138/(80+138)=0.6330275
+#specificty=284/(284+34)=0.8930818
+#accuracy=(138+284)/(138+284+80+34)= 0.7873134
+```
+
+#question3
+```{r}
+pred <- model %>% predict(test)
+table(test$Survived,pred)
+
+```
+
+```{r}
+#sensitivity=53/(53+19)=0.7361111
+#specificty=90/(90+16)=0.8490566
+#accuracy=(53+90)/(53+90+16+19)=0.8033708
+```
+
+#question4
+```{r}
+#part a
+varImpPlot(model$finalModel, type = 1)
+```
+
+```{r}
+#part b
+varImpPlot(model$finalModel, type = 2)
+
+```
+
+
+```{r}
+varImp(model)
+```
+
+#question 6
+```{r}
+sqrt(36)
+
+```
+
+
+
+
+
