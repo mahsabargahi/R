@@ -1,0 +1,136 @@
+---
+title: "QUIZ 4"
+author: "Mahsa Bargahi"
+date: "4/4/2021"
+output: word_document
+---
+
+```{r}
+data("birthwt", package = "MASS")
+bwt <- with(birthwt, {
+  race <- factor(race, labels = c("white", "black", "other"))
+  ptd <- factor(ptl > 0)
+  ftv <- factor(ftv)
+  levels(ftv)[-(1:2)] <- "2+"
+  data.frame(low = factor(low), age, lwt, race, smoke = (smoke > 0), ptd, ht = (ht > 0), ui = (ui > 0), ftv)
+})
+options(contrasts = c("contr.treatment", "contr.poly"))
+bw.glm <- glm(low ~ ., family = binomial, data = bwt)
+```
+
+```{r}
+library(tidyverse)
+library(caret)
+theme_set(theme_bw())
+```
+
+```{r}
+bwt <- na.omit(bwt)
+# Split the data into training and test set
+set.seed(123)
+training.samples <- bwt$low %>% 
+  createDataPartition(p = 0.8, list = FALSE)
+train.data  <- bwt[training.samples, ]
+test.data <- bwt[-training.samples, ]
+```
+
+
+```{r}
+# Fit the model
+model <- glm( low ~., data = train.data, family = binomial)
+# Summarize the model
+summary(model)
+# Make predictions
+probabilities <- model %>% predict(test.data, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "0", "1")
+p_class <- factor(predicted.classes, levels = c("0","1"))
+# Model accuracy
+mean(predicted.classes == test.data$low)
+##confusion matrix
+caret::confusionMatrix(p_class, test.data$low)
+```
+
+
+
+#question 2
+
+```{r}
+full <- glm(low ~ ., family = binomial, data = train.data)
+summary(full)
+```
+```{r}
+library("MASS")
+```
+
+```{r}
+BIC<-stepAIC(full,k=log(nrow(bwt))) #BIC method
+BIC$anova
+```
+
+```{r}
+library(leaps) # bestglm requires installation of leaps package
+library(bestglm)
+args(bestglm)
+```
+```{r}
+probabilities <- BIC %>% predict(test.data, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "0", "1")
+# Model accuracy
+mean(predicted.classes == test.data$low)
+p_class <- factor(predicted.classes, levels = c("0","1"))
+##confusion matrix
+caret::confusionMatrix(p_class, test.data$low)
+```
+##question 3
+```{r}
+library(dummies)
+race<-data.frame(dummy(bwt$race)[,c(1,2)])
+ftv<-data.frame(dummy(bwt$ftv)[,c(2,3)])
+bwt.dummy<-bwt[,-c(1,4,9)]
+low<-bwt$low
+bwt.dummy<-cbind(bwt.dummy,race,ftv, low)
+```
+
+```{r}
+library(bestglm)
+model2<-bestglm(bwt.dummy,IC="BIC",family=binomial)
+bestglm(bwt.dummy,IC="BIC",family=binomial)
+model2$BestModel
+```
+
+```{r}
+probabilities <- model2$BestModel %>% predict(test.data, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "0", "1")
+# Model accuracy
+mean(predicted.classes == test.data$low)
+p_class <- factor(predicted.classes, levels = c("0","1"))
+##confusion matrix
+caret::confusionMatrix(p_class, test.data$low)
+```
+
+
+##Question 4
+```{r}
+#the accuracy of the model in question 1 is 0.37, in question 2 is 0.29 and in question 3 is 0.27. So, I will suggest the model in question 1.
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

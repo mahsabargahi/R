@@ -1,0 +1,69 @@
+---
+title: "Quiz8"
+author: "Mahsa Bargahi"
+date: "5/3/2021"
+output: word_document
+---
+
+```{r}
+library(tidyverse)
+library(caret)
+
+```
+
+```{r}
+# Load the data
+banknote<-read.csv("banknote.csv")
+banknote.data <- na.omit(banknote)
+# Predicting the probability of being diabetes positive based on multiple clinical variables
+# Inspect the data
+str(banknote.data) #1372 obs
+banknote.data$class<-as.factor(banknote.data$class)
+```
+
+```{r}
+# Split the data into training and test set
+set.seed(123)
+training.samples <- banknote.data$class %>%
+createDataPartition(p = 0.75, list = FALSE)
+train.data <- banknote.data[training.samples, ]
+test.data <- banknote.data[-training.samples, ]
+
+```
+
+
+```{r}
+# Fit the model on the training set
+set.seed(123)
+model <- train(
+ class ~., data = train.data, method = "svmLinear",
+ trControl = trainControl("cv", number = 10),
+ preProcess = c("center","scale")
+ )
+# Make predictions on the test data
+predicted.classes <- model %>% predict(test.data)
+head(predicted.classes)
+
+
+```
+
+
+```{r}
+# Compute model accuracy rate
+mean(predicted.classes == test.data$class)
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+
+```
